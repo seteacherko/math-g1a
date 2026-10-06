@@ -1,0 +1,14 @@
+{
+  "name": "一上數學小步走",
+  "short_name": "一上數學",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "landscape",
+  "background_color": "#FFF8EE",
+  "theme_color": "#C2570C",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
