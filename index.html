@@ -479,6 +479,21 @@ details.grp>.units{padding:0 1.1rem 1.1rem}
 .pw .q{color:var(--warn)}
 .side2{display:flex;flex-wrap:wrap;gap:.8rem;align-items:center;justify-content:center}.side2>.vis{flex:1 1 0;min-width:0}
 .glyph .vis{width:auto;height:2.4rem}
+/* 開注音時，國字放大一點，注音小一點，讀起來比較舒服 */
+html[data-zy]{font-size:22px} html[data-zy][data-big]{font-size:26px}
+@media (max-width:700px){html[data-zy]{font-size:19px} html[data-zy][data-big]{font-size:22px}}
+html[data-zy] .btn,html[data-zy] .opt,html[data-zy] .chip{flex-wrap:wrap;white-space:normal;max-width:100%;justify-content:center;row-gap:.15em}
+/* 注音：國字右邊直排注音；聲調另佔一欄，不會壓到下一個字（用自訂標籤，不受其他樣式影響） */
+z-y{display:inline-flex;align-items:center;vertical-align:bottom;white-space:nowrap}
+z-c{display:inline;font-size:1em}
+z-b{display:none;flex-direction:row;align-items:stretch;font-size:max(.36em,8px);line-height:1.04;margin:0 .2em 0 .05em;font-family:"PingFang TC","Microsoft JhengHei","Noto Sans TC",sans-serif;font-weight:400;font-style:normal;color:color-mix(in srgb,currentColor 72%,transparent);letter-spacing:0;text-transform:none}
+html[data-zy] z-b{display:inline-flex}
+z-s{display:flex;flex-direction:column;align-items:center;justify-content:center}
+z-i{display:block;font-style:normal}
+z-i.lt{line-height:.55}
+z-t{display:flex;align-items:center;justify-content:flex-start;width:.62em;flex:none;line-height:1;padding-left:.04em}
+z-t.n2,z-t.n3{align-items:flex-end;padding-bottom:.42em}
+html[data-zy] .stage>span:first-child{white-space:nowrap}html[data-zy] .stage small{white-space:normal}
 </style>
 </head>
 <body>
@@ -492,6 +507,7 @@ details.grp>.units{padding:0 1.1rem 1.1rem}
     <button class="chip" id="t-set" type="button" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/></svg>設定</button>
   </div>
   <div class="settings" id="settings" hidden>
+    <button class="chip" type="button" data-set="zy" aria-pressed="true">注音</button>
     <button class="chip" type="button" data-set="auto" aria-pressed="false">自動朗讀題目</button>
     <button class="chip" type="button" data-set="calm" aria-pressed="false">減敏模式（顏色淡、不動畫）</button>
     <button class="chip" type="button" data-set="big" aria-pressed="false">大字</button>
@@ -1505,15 +1521,56 @@ const U=[
 ]}
 ];
 
+/* ---------- 注音：每個國字右邊加注音（設定裡可以關掉） ---------- */
+const ZY_RAW=`一ㄧ 七ㄑㄧ 三ㄙㄢ 上ㄕㄤˋ 下ㄒㄧㄚˋ 不ㄅㄨˋ 丙ㄅㄧㄥˇ 中ㄓㄨㄥ 久ㄐㄧㄡˇ 之ㄓ 乘ㄔㄥˊ 乙ㄧˇ 九ㄐㄧㄡˇ 也ㄧㄝˇ 亂ㄌㄨㄢˋ 了˙ㄌㄜ 事ㄕˋ 二ㄦˋ 互ㄏㄨˋ 五ㄨˇ 些ㄒㄧㄝ 交ㄐㄧㄠ 人ㄖㄣˊ 什ㄕㄣˊ 他ㄊㄚ 以ㄧˇ 件ㄐㄧㄢˋ 任ㄖㄣˋ 休ㄒㄧㄡ 伸ㄕㄣ 但ㄉㄢˋ 位ㄨㄟˋ 住ㄓㄨˋ 何ㄏㄜˊ 作ㄗㄨㄛˋ 你ㄋㄧˇ 佳ㄐㄧㄚ 來ㄌㄞˊ 例ㄌㄧˋ 依ㄧ 便ㄅㄧㄢˋ 係ㄒㄧˋ 保ㄅㄠˇ 信ㄒㄧㄣˋ 個˙ㄍㄜ 倍ㄅㄟˋ 們˙ㄇㄣ 倒ㄉㄠˋ 候˙ㄏㄡ 借ㄐㄧㄝˋ 假ㄐㄧㄚˇ 做ㄗㄨㄛˋ 停ㄊㄧㄥˊ 備ㄅㄟˋ 元ㄩㄢˊ 先ㄒㄧㄢ 光ㄍㄨㄤ 入ㄖㄨˋ 內ㄋㄟˋ 全ㄑㄩㄢˊ 兩ㄌㄧㄤˇ 八ㄅㄚ 公ㄍㄨㄥ 六ㄌㄧㄡˋ 共ㄍㄨㄥˋ 其ㄑㄧˊ 典ㄉㄧㄢˇ 冊ㄘㄜˋ 再ㄗㄞˋ 冠ㄍㄨㄢˋ 冷ㄌㄥˇ 出ㄔㄨ 分ㄈㄣ 切ㄑㄧㄝ 判ㄆㄢˋ 別ㄅㄧㄝˊ 刪ㄕㄢ 到ㄉㄠˋ 刷ㄕㄨㄚ 前ㄑㄧㄢˊ 剛ㄍㄤ 剩ㄕㄥˋ 剪ㄐㄧㄢˇ 力ㄌㄧˋ 功ㄍㄨㄥ 加ㄐㄧㄚ 努ㄋㄨˇ 勇ㄩㄥˇ 動ㄉㄨㄥˋ 勵ㄌㄧˋ 勾ㄍㄡ 包ㄅㄠ 匙ㄔˊ 十ㄕˊ 升ㄕㄥ 午ㄨˇ 半ㄅㄢˋ 博ㄅㄛˊ 卡ㄎㄚˇ 卷ㄐㄩㄢˋ 厚ㄏㄡˋ 原ㄩㄢˊ 去ㄑㄩˋ 參ㄘㄢ 又ㄧㄡˋ 友ㄧㄡˇ 反ㄈㄢˇ 口ㄎㄡˇ 另ㄌㄧㄥˋ 只ㄓˇ 叫ㄐㄧㄠˋ 叭˙ㄅㄚ 可ㄎㄜˇ 台ㄊㄞˊ 右ㄧㄡˋ 吃ㄔ 各ㄍㄜˋ 合ㄏㄜˊ 同ㄊㄨㄥˊ 向ㄒㄧㄤˋ 呢˙ㄋㄜ 周ㄓㄡ 呱ㄍㄨㄚ 味ㄨㄟˋ 和ㄏㄢˋ 哪ㄋㄚˇ 唸ㄋㄧㄢˋ 念ㄋㄧㄢˋ 商ㄕㄤ 喇ㄌㄚˇ 喔ㄛ 喝ㄏㄜ 單ㄉㄢ 嗎˙ㄇㄚ 器ㄑㄧˋ 囉˙ㄌㄨㄛ 四ㄙˋ 回ㄏㄨㄟˊ 因ㄧㄣ 圈ㄑㄩㄢ 圍ㄨㄟˊ 園ㄩㄢˊ 圓ㄩㄢˊ 圖ㄊㄨˊ 在ㄗㄞˋ 地ㄉㄧˋ 均ㄐㄩㄣ 坐ㄗㄨㄛˋ 基ㄐㄧ 堆ㄉㄨㄟ 場ㄔㄤˊ 塊ㄎㄨㄞˋ 塗ㄊㄨˊ 塘ㄊㄤˊ 填ㄊㄧㄢˊ 士ㄕˋ 外ㄨㄞˋ 多ㄉㄨㄛ 夠ㄍㄡˋ 大ㄉㄚˋ 天ㄊㄧㄢ 太ㄊㄞˋ 套ㄊㄠˋ 奶ㄋㄞˇ 好ㄏㄠˇ 始ㄕˇ 媽ㄇㄚ 子˙ㄗ 字ㄗˋ 存ㄘㄨㄣˊ 學ㄒㄩㄝˊ 它ㄊㄚ 完ㄨㄢˊ 定ㄉㄧㄥˋ 室ㄕˋ 害ㄏㄞˋ 家ㄐㄧㄚ 容ㄖㄨㄥˊ 寫ㄒㄧㄝˇ 寬ㄎㄨㄢ 封ㄈㄥ 對ㄉㄨㄟˋ 小ㄒㄧㄠˇ 少ㄕㄠˇ 就ㄐㄧㄡˋ 尺ㄔˇ 屋ㄨ 層ㄘㄥˊ 左ㄗㄨㄛˇ 差ㄔㄚ 己ㄐㄧˇ 已ㄧˇ 帆ㄈㄢˊ 師ㄕ 帶ㄉㄞˋ 常ㄔㄤˊ 帽ㄇㄠˋ 幅ㄈㄨˊ 幕ㄇㄨˋ 平ㄆㄧㄥˊ 幾ㄐㄧˇ 床ㄔㄨㄤˊ 序ㄒㄩˋ 底ㄉㄧˇ 度ㄉㄨˋ 廂ㄒㄧㄤ 建ㄐㄧㄢˋ 式ㄕˋ 弧ㄏㄨˊ 張ㄓㄤ 彎ㄨㄢ 形ㄒㄧㄥˊ 往ㄨㄤˇ 很ㄏㄣˇ 律ㄌㄩˋ 後ㄏㄡˋ 徑ㄐㄧㄥˋ 得˙ㄉㄜ 從ㄘㄨㄥˊ 心ㄒㄧㄣ 忘ㄨㄤˋ 快ㄎㄨㄞˋ 怎ㄗㄣˇ 性ㄒㄧㄥˋ 情ㄑㄧㄥˊ 想ㄒㄧㄤˇ 愈ㄩˋ 慢ㄇㄢˋ 慶ㄑㄧㄥˋ 懂ㄉㄨㄥˇ 應ㄧㄥ 成ㄔㄥˊ 我ㄨㄛˇ 或ㄏㄨㄛˋ 戰ㄓㄢˋ 戲ㄒㄧˋ 戴ㄉㄞˋ 房ㄈㄤˊ 所ㄙㄨㄛˇ 扇ㄕㄢˋ 手ㄕㄡˇ 才ㄘㄞˊ 打ㄉㄚˇ 找ㄓㄠˇ 把ㄅㄚˇ 投ㄊㄡˊ 拉ㄌㄚ 拼ㄆㄧㄣ 拿ㄋㄚˊ 持ㄔˊ 指ㄓˇ 按ㄢˋ 挑ㄊㄧㄠˇ 挖ㄨㄚ 掃ㄙㄠˇ 掉ㄉㄧㄠˋ 排ㄆㄞˊ 探ㄊㄢˋ 接ㄐㄧㄝ 推ㄊㄨㄟ 描ㄇㄧㄠˊ 提ㄊㄧˊ 換ㄏㄨㄢˋ 撈ㄌㄠ 撿ㄐㄧㄢˇ 操ㄘㄠ 改ㄍㄞˇ 放ㄈㄤˋ 敏ㄇㄧㄣˇ 教ㄐㄧㄠˋ 整ㄓㄥˇ 數ㄕㄨˇ 新ㄒㄧㄣ 斷ㄉㄨㄢˋ 方ㄈㄤ 於ㄩˊ 旁ㄆㄤˊ 旗ㄑㄧˊ 早ㄗㄠˇ 明ㄇㄧㄥˊ 易ㄧˋ 星ㄒㄧㄥ 是ㄕˋ 時ㄕˊ 晚ㄨㄢˇ 曲ㄑㄩ 更ㄍㄥˋ 書ㄕㄨ 最ㄗㄨㄟˋ 會ㄏㄨㄟˋ 有ㄧㄡˇ 朋ㄆㄥˊ 朗ㄌㄤˇ 木ㄇㄨˋ 本ㄅㄣˇ 朵ㄉㄨㄛˇ 杯ㄅㄟ 東ㄉㄨㄥ 林ㄌㄧㄣˊ 果ㄍㄨㄛˇ 枝ㄓ 查ㄔㄚˊ 柴ㄔㄞˊ 校ㄒㄧㄠˋ 根ㄍㄣ 格ㄍㄜˊ 框ㄎㄨㄤ 案ㄢˋ 桌ㄓㄨㄛ 條ㄊㄧㄠˊ 梯ㄊㄧ 棒ㄅㄤˋ 椅ㄧˇ 模ㄇㄛˊ 樣ㄧㄤˋ 樹ㄕㄨˋ 機ㄐㄧ 檢ㄐㄧㄢˇ 櫃ㄍㄨㄟˋ 次ㄘˋ 正ㄓㄥˋ 步ㄅㄨˋ 母ㄇㄨˇ 每ㄇㄟˇ 比ㄅㄧˇ 氣ㄑㄧˋ 水ㄕㄨㄟˇ 求ㄑㄧㄡˊ 池ㄔˊ 汽ㄑㄧˋ 沒ㄇㄟˊ 油ㄧㄡˊ 法ㄈㄚˇ 泳ㄩㄥˇ 洗ㄒㄧˇ 洞ㄉㄨㄥˋ 淡ㄉㄢˋ 混ㄏㄨㄣˋ 減ㄐㄧㄢˇ 測ㄘㄜˋ 游ㄧㄡˊ 湯ㄊㄤ 準ㄓㄨㄣˇ 溜ㄌㄧㄡ 滑ㄏㄨㄚˊ 滾ㄍㄨㄣˇ 滿ㄇㄢˇ 漏ㄌㄡˋ 演ㄧㄢˇ 澡ㄗㄠˇ 瀏ㄌㄧㄡˊ 火ㄏㄨㄛˇ 灰ㄏㄨㄟ 照ㄓㄠˋ 煮ㄓㄨˇ 熟ㄕㄡˊ 熱ㄖㄜˋ 片ㄆㄧㄢˋ 版ㄅㄢˇ 牙ㄧㄚˊ 牛ㄋㄧㄡˊ 物ㄨˋ 特ㄊㄜˋ 狀ㄓㄨㄤˋ 猜ㄘㄞ 獎ㄐㄧㄤˇ 率ㄌㄩˋ 玩ㄨㄢˊ 現ㄒㄧㄢˋ 球ㄑㄧㄡˊ 理ㄌㄧˇ 環ㄏㄨㄢˊ 瓢ㄆㄧㄠˊ 瓶ㄆㄧㄥˊ 生ㄕㄥ 用ㄩㄥˋ 甲ㄐㄧㄚˇ 番ㄈㄢ 畫ㄏㄨㄚˋ 當ㄉㄤ 疊ㄉㄧㄝˊ 發ㄈㄚ 白ㄅㄞˊ 的˙ㄉㄜ 皮ㄆㄧˊ 盒ㄏㄜˊ 盤ㄆㄢˊ 目ㄇㄨˋ 直ㄓˊ 相ㄒㄧㄤ 看ㄎㄢˋ 真ㄓㄣ 眨ㄓㄚˇ 眼ㄧㄢˇ 睛˙ㄐㄧㄥ 知ㄓ 短ㄉㄨㄢˇ 矮ㄞˇ 碗ㄨㄢˇ 確ㄑㄩㄝˋ 碼ㄇㄚˇ 礎ㄔㄨˇ 示ㄕˋ 禮ㄌㄧˇ 秒ㄇㄧㄠˇ 移ㄧˊ 程ㄔㄥˊ 種ㄓㄨㄥˇ 積ㄐㄧ 穩ㄨㄣˇ 空ㄎㄨㄥ 穿ㄔㄨㄢ 立ㄌㄧˋ 站ㄓㄢˋ 章ㄓㄤ 端ㄉㄨㄢ 競ㄐㄧㄥˋ 符ㄈㄨˊ 第ㄉㄧˋ 筆ㄅㄧˇ 等ㄉㄥˇ 答ㄉㄚˊ 算ㄙㄨㄢˋ 管ㄍㄨㄢˇ 箱ㄒㄧㄤ 節ㄐㄧㄝˊ 簡ㄐㄧㄢˇ 籃ㄌㄢˊ 精ㄐㄧㄥ 糕ㄍㄠ 糖ㄊㄤˊ 紀ㄐㄧˋ 約ㄩㄝ 紅ㄏㄨㄥˊ 紙ㄓˇ 級ㄐㄧˊ 索ㄙㄨㄛˇ 結ㄐㄧㄝˊ 給ㄍㄟˇ 經ㄐㄧㄥ 綜ㄗㄨㄥˋ 線ㄒㄧㄢˋ 緞ㄉㄨㄢˋ 編ㄅㄧㄢ 練ㄌㄧㄢˋ 總ㄗㄨㄥˇ 績ㄐㄧ 繩ㄕㄥˊ 繼ㄐㄧˋ 續ㄒㄩˋ 缸ㄍㄤ 罐ㄍㄨㄢˋ 置ㄓˋ 羊ㄧㄤˊ 美ㄇㄟˇ 習ㄒㄧˊ 翰ㄏㄢˋ 老ㄌㄠˇ 考ㄎㄠˇ 聽ㄊㄧㄥ 背ㄅㄟˋ 能ㄋㄥˊ 腦ㄋㄠˇ 腳ㄐㄧㄠˇ 臉ㄌㄧㄢˇ 自ㄗˋ 與ㄩˇ 船ㄔㄨㄢˊ 色ㄙㄜˋ 花ㄏㄨㄚ 茄ㄑㄧㄝˊ 葉ㄧㄝˋ 著˙ㄓㄜ 薄ㄅㄠˊ 藍ㄌㄢˊ 蘋ㄆㄧㄥˊ 虛ㄒㄩ 號ㄏㄠˋ 蛋ㄉㄢˋ 螞ㄇㄚˇ 螢ㄧㄥˊ 蟲ㄔㄨㄥˊ 蟻ㄧˇ 蠟ㄌㄚˋ 表ㄅㄧㄠˇ 被ㄅㄟˋ 裝ㄓㄨㄤ 裡ㄌㄧˇ 複ㄈㄨˋ 襪ㄨㄚˋ 西ㄒㄧ 要ㄧㄠˋ 規ㄍㄨㄟ 覽ㄌㄢˇ 角ㄐㄧㄠˇ 解ㄐㄧㄝˇ 計ㄐㄧˋ 訓ㄒㄩㄣˋ 記ㄐㄧˋ 設ㄕㄜˋ 評ㄆㄧㄥˊ 試ㄕˋ 話ㄏㄨㄚˋ 認ㄖㄣˋ 說ㄕㄨㄛ 誰ㄕㄟˊ 課ㄎㄜˋ 請ㄑㄧㄥˇ 識ㄕˋ 議ㄧˋ 讀ㄉㄨˊ 變ㄅㄧㄢˋ 貓ㄇㄠ 買ㄇㄞˇ 貼ㄊㄧㄝ 賣ㄇㄞˋ 質ㄓˊ 賽ㄙㄞˋ 走ㄗㄡˇ 起ㄑㄧˇ 超ㄔㄠ 越ㄩㄝˋ 趣ㄑㄩˋ 跑ㄆㄠˇ 距ㄐㄩˋ 跟ㄍㄣ 路ㄌㄨˋ 跳ㄊㄧㄠˋ 踏ㄊㄚˋ 蹲ㄉㄨㄣ 身ㄕㄣ 躺ㄊㄤˇ 車ㄔㄜ 軍ㄐㄩㄣ 較ㄐㄧㄠˋ 輕ㄑㄧㄥ 輛ㄌㄧㄤˋ 近ㄐㄧㄣˋ 退ㄊㄨㄟˋ 送ㄙㄨㄥˋ 這ㄓㄜˋ 通ㄊㄨㄥ 逛ㄍㄨㄤˋ 速ㄙㄨˋ 連ㄌㄧㄢˊ 進ㄐㄧㄣˋ 遊ㄧㄡˊ 遍ㄅㄧㄢˋ 過ㄍㄨㄛˋ 道ㄉㄠˋ 達ㄉㄚˊ 遠ㄩㄢˇ 適ㄕˋ 選ㄒㄩㄢˇ 還ㄏㄞˊ 邊ㄅㄧㄢ 那ㄋㄚˋ 部ㄅㄨˋ 都ㄉㄡ 配ㄆㄟˋ 里ㄌㄧˇ 重ㄓㄨㄥˋ 量ㄌㄧㄤˊ 針ㄓㄣ 鈕ㄋㄧㄡˇ 鉛ㄑㄧㄢ 錄ㄌㄨˋ 錯ㄘㄨㄛˋ 鍵ㄐㄧㄢˋ 鐘ㄓㄨㄥ 長ㄔㄤˊ 門ㄇㄣˊ 開ㄎㄞ 間ㄐㄧㄢ 關ㄍㄨㄢ 限ㄒㄧㄢˋ 除ㄔㄨˊ 階ㄐㄧㄝ 隨ㄙㄨㄟˊ 險ㄒㄧㄢˇ 隻ㄓ 集ㄐㄧˊ 離ㄌㄧˊ 零ㄌㄧㄥˊ 電ㄉㄧㄢˋ 需ㄒㄩ 青ㄑㄧㄥ 靠ㄎㄠˋ 面ㄇㄧㄢˋ 鞋ㄒㄧㄝˊ 頁ㄧㄝˋ 頂ㄉㄧㄥˇ 項ㄒㄧㄤˋ 順ㄕㄨㄣˋ 頓ㄉㄨㄣˋ 頭ㄊㄡˊ 顆ㄎㄜ 題ㄊㄧˊ 顏ㄧㄢˊ 類ㄌㄟˋ 顯ㄒㄧㄢˇ 飛ㄈㄟ 餐ㄘㄢ 騎ㄑㄧˊ 驗ㄧㄢˋ 驟ㄗㄡˋ 骰ㄊㄡˊ 體ㄊㄧˇ 高ㄍㄠ 魚ㄩˊ 鳥ㄋㄧㄠˇ 鴨ㄧㄚ 麼˙ㄇㄜ 黃ㄏㄨㄤˊ 黑ㄏㄟ 點ㄉㄧㄢˇ 齊ㄑㄧˊ 齡ㄌㄧㄥˊ 注ㄓㄨˋ 音ㄧㄣ 再ㄗㄞˋ`;
+const ZY={};ZY_RAW.split(/\s+/).forEach(w=>{if(w)ZY[w[0]]=w.slice(1);});
+/* 破音字：[規則, 這個字在符合時的讀音]；規則裡用 ( ) 包住要改讀音的那個字 */
+const ZY_RULES=[
+  [/(數)(?=字|學|線|量|目|的順序|的比較|挖)/g,'ㄕㄨˋ'],[/(?<=[個的何分倍乘除因小質位兩大整總這那]|什麼)(數)/g,'ㄕㄨˋ'],[/(?<=一個一個|指著|點)(數)/g,'ㄕㄨˇ'],
+  [/(?<=套|打|猜)(中)/g,'ㄓㄨㄥˋ'],
+  [/(得)(?=到|\s*\d|星|分)/g,'ㄉㄜˊ'],
+  [/(長)(?=出|大|高了|什麼)/g,'ㄓㄤˇ'],
+  [/(重)(?=複|來|新|做|數)/g,'ㄔㄨㄥˊ'],
+  [/(種)(?=下|樹|花|菜)/g,'ㄓㄨㄥˋ'],[/(?<=種)(子)/g,'ㄗˇ'],[/(?<=分)(子)/g,'ㄗˇ'],
+  [/(倒)(?=下)/g,'ㄉㄠˇ'],[/(?<=沒)(倒)/g,'ㄉㄠˇ'],
+  [/(?<=對)(應)/g,'ㄧㄥˋ'],
+  [/(?<=東)(西)/g,'˙ㄒㄧ'],[/(?<=朋)(友)/g,'˙ㄧㄡ'],[/(?<=知)(道)/g,'˙ㄉㄠ'],[/(?<=事)(情)/g,'˙ㄑㄧㄥ'],
+  [/(?<=媽)(媽)/g,'˙ㄇㄚ'],[/(?<=奶)(奶)/g,'˙ㄋㄞ'],
+  [/(?<=喇)(叭)/g,'˙ㄅㄚ'],[/(?<=湯)(匙)/g,'ㄔˊ']
+];
+function zyReadings(t){
+  const r=[...t].map(c=>ZY[c]||null);
+  const idx=[];let k=0;for(const c of t){idx.push(k);k+=c.length;}
+  ZY_RULES.forEach(([re,rd])=>{re.lastIndex=0;let m;while((m=re.exec(t))){const p=m.index+m[0].indexOf(m[1]);const ci=idx.indexOf(p);if(ci>=0)r[ci]=rd;if(re.lastIndex===m.index)re.lastIndex++;}});
+  return r;
+}
+function zyCell(ch,rd){
+  let tone='',light=false,b=rd;
+  if(b[0]==='˙'){light=true;b=b.slice(1);}
+  if(/[ˊˇˋ]$/.test(b)){tone=b.slice(-1);b=b.slice(0,-1);}
+  return `<z-y><z-c>${ch}</z-c><z-b aria-hidden="true"><z-s>${light?'<z-i class="lt">˙</z-i>':''}${[...b].map(s=>`<z-i>${s}</z-i>`).join('')}</z-s><z-t class="n${b.length}">${tone}</z-t></z-b></z-y>`;
+}
+const ZY_SKIP='svg,script,style,textarea,input,select,small,.brand-mark,z-y,z-b,.no-zy,.pad,.dkey,.calc';
+function zyNode(n){
+  if(n.nodeType===3){const t=n.nodeValue;if(!/\p{Script=Han}/u.test(t))return;const p=n.parentElement;if(!p||p.closest(ZY_SKIP))return;
+    const rd=zyReadings(t);let html='';[...t].forEach((c,i)=>{html+=rd[i]?zyCell(c,rd[i]):c.replace(/&/g,'&amp;').replace(/</g,'&lt;');});
+    const tpl=document.createElement('template');tpl.innerHTML=html;n.replaceWith(tpl.content);return;}
+  if(n.nodeType===1){if(n.matches(ZY_SKIP))return;[...n.childNodes].forEach(zyNode);}
+}
+function zyStart(){
+  zyNode(document.body);
+  new MutationObserver(ms=>ms.forEach(m=>m.addedNodes.forEach(x=>{if(x.isConnected)zyNode(x);}))).observe(document.body,{childList:true,subtree:true});
+}
+
 /* ---------- storage & settings ---------- */
 let store={};
 try{store=JSON.parse(localStorage.getItem('math1a-v1')||'{}')||{};}catch(e){store={};}
-store.p=store.p||{};store.q=store.q||{};store.qv=store.qv||{};store.qd=store.qd||{};store.set=Object.assign({auto:true,calm:false,big:false,pad:true,calc:false},store.set||{});
+store.p=store.p||{};store.q=store.q||{};store.qv=store.qv||{};store.qd=store.qd||{};store.set=Object.assign({zy:true,auto:true,calm:false,big:false,pad:true,calc:false},store.set||{});
 function save(){try{store.sum=summary();}catch(e){}try{localStorage.setItem('math1a-v1',JSON.stringify(store));}catch(e){}}
 function applySet(){
   const s=store.set,r=document.documentElement;
   s.calm?r.setAttribute('data-calm',''):r.removeAttribute('data-calm');
-  s.big?r.setAttribute('data-big',''):r.removeAttribute('data-big');
+  s.big?r.setAttribute('data-big',''):r.removeAttribute('data-big');s.zy?r.setAttribute('data-zy',''):r.removeAttribute('data-zy');
   $$('[data-set]').forEach(b=>b.setAttribute('aria-pressed',String(!!s[b.dataset.set])));
   $$('.box').forEach(b=>b.setAttribute('inputmode',s.pad?'none':'decimal'));
   if(!s.pad)pad.hidden=true;
@@ -1540,7 +1597,7 @@ function bindMode(root,again){$$('[data-mode]',root).forEach(b=>b.onclick=()=>{s
 /* ---------- speech ---------- */
 function toSpeech(el){
   const c=el.cloneNode(true);
-  c.querySelectorAll('svg,.no-say,table.ladder').forEach(x=>x.remove());
+  c.querySelectorAll('svg,.no-say,table.ladder,z-b').forEach(x=>x.remove());
   c.querySelectorAll('.fr').forEach(f=>f.replaceWith(f.getAttribute('aria-label')||'多少'));
   c.querySelectorAll('.peek').forEach(p=>{const v=p.querySelector('.peek-v');p.replaceWith(v&&!v.hidden?v.textContent:'多少');});
   c.querySelectorAll('button').forEach(x=>x.remove());
@@ -2073,7 +2130,7 @@ function viewLevel(u,l){
    <div id="stage"></div></div>`;
   bindGo(V());
   $$('[data-st]').forEach(b=>b.onclick=()=>{
-    if(b.classList.contains('locked')){$('#lockmsg').innerHTML=`<div class="fb-msg info" style="margin:0 0 .8rem">${ICON.bulb}<div>${store.mode==='a'?'先完成「重點」：看完重點，答對確認題，就可以挑戰。':'先完成「我看」：看完例題，再把重點唸一遍，就可以進到「我懂」。'}</div></div>`;return;}
+    if(b.classList.contains('locked')){$('#lockmsg').innerHTML=`<div class="fb-msg info" style="margin:0 0 .8rem">${ICON.bulb}<div>${store.mode==='a'?'先完成「重點」：看完重點，答對確認題，就可以挑戰。':'先完成「我看」：看完例題，再跟著把重點念一遍，就可以進到「我懂」。'}</div></div>`;return;}
     stageSel[key]=b.dataset.st;viewLevel(u,l);});
   window.unlockTabs=()=>{$$('.stage.locked').forEach(b=>{b.classList.remove('locked');b.removeAttribute('aria-disabled');const lk=$('.lk',b);if(lk)lk.remove();const sm=$('small',b);const d=SG.find(s=>s[0]===b.dataset.st);if(sm&&d)sm.textContent=d[2];});$('#lockmsg').innerHTML='';
     const lb=$(`[data-st="${first}"]`);if(lb&&!$('.ck',lb))lb.insertAdjacentHTML('beforeend',`<span class="ck">${ICON.check}</span>`);};
@@ -2113,19 +2170,19 @@ function stLook(box,u,l,L,goStage){
     if(unrevealed())nb.innerHTML=`${ICON.eye}看答案`;
     else nb.innerHTML=i<N-1?`下一步${ICON.next}`:`看重點${ICON.next}`;
   }
-  /* 重點: the student reads it aloud once; "我唸完了" unlocks after a short wait, then 我懂 opens */
+  /* 重點: the student reads it aloud once; "我念完了" unlocks after a short wait, then 我懂 opens */
   function showKey(){
     nb.hidden=true;pb.style.visibility='hidden';
-    kb.innerHTML=`<div class="keypt"><b class="lab">重點：請自己唸一遍</b><div class="key-txt">${X.key}</div>
-      <div class="read-row"><button class="btn ghost" type="button" id="kl">${ICON.say}先聽一次</button><button class="btn read-btn" type="button" id="kr" disabled></button></div></div>`;
+    kb.innerHTML=`<div class="keypt"><b class="lab">重點：跟著念一遍</b><div class="key-txt">${X.key}</div>
+      <div class="read-row"><button class="btn ghost" type="button" id="kl">${ICON.say}再聽一次</button><button class="btn read-btn" type="button" id="kr" disabled></button></div></div>`;
     const kt=$('.key-txt',kb),kr=$('#kr',kb);
-    $('#kl',kb).onclick=()=>speak(toSpeech(kt));
-    const plain=kt.textContent.replace(/\s/g,'');const total=Math.min(12,Math.max(3,Math.ceil(plain.length*0.3)));let left=total;
+    $('#kl',kb).onclick=()=>speak(toSpeech(kt));setTimeout(()=>{if(kt.isConnected)speak(toSpeech(kt));},350);
+    const plain=X.key.replace(/<[^>]*>/g,'').replace(/\s/g,'');const total=Math.min(20,Math.max(5,Math.ceil(plain.length*0.6)));let left=total;
     const tick=()=>{if(!kr.isConnected)return;
-      if(left>0){kr.innerHTML=`請唸一遍…（${left} 秒）`;kr.style.setProperty('--p',`${(total-left)/total*100}%`);left--;setTimeout(tick,1000);}
-      else{kr.disabled=false;kr.style.setProperty('--p','100%');kr.innerHTML=`${ICON.check}我唸完了`;}};
+      if(left>0){kr.innerHTML=`跟著念一遍…（${left} 秒）`;kr.style.setProperty('--p',`${(total-left)/total*100}%`);left--;setTimeout(tick,1000);}
+      else{kr.disabled=false;kr.style.setProperty('--p','100%');kr.innerHTML=`${ICON.check}我念完了`;}};
     tick();
-    kr.onclick=()=>{markStage(u,l,'look');kr.disabled=true;kr.innerHTML=`${ICON.check}唸完了，好棒！`;nb.hidden=false;nb.innerHTML=`去「我懂」${ICON.next}`;nb.focus({preventScroll:true});unlockTabs();};
+    kr.onclick=()=>{markStage(u,l,'look');kr.disabled=true;kr.innerHTML=`${ICON.check}念完了，好棒！`;nb.hidden=false;nb.innerHTML=`去「我懂」${ICON.next}`;nb.focus({preventScroll:true});unlockTabs();};
     kb.scrollIntoView({block:'nearest',behavior:store.set.calm?'auto':'smooth'});
   }
   function draw(){
@@ -2313,6 +2370,7 @@ function viewQuiz(u){
 }
 
 applySet();render();
+try{zyStart();}catch(e){}
 </script>
 
 <script>
