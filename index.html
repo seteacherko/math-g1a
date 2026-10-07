@@ -494,6 +494,14 @@ z-i.lt{line-height:.55}
 z-t{display:flex;align-items:center;justify-content:flex-start;width:.62em;flex:none;line-height:1;padding-left:.04em}
 z-t.n2,z-t.n3{align-items:flex-end;padding-bottom:.42em}
 html[data-zy] .stage>span:first-child{white-space:nowrap}html[data-zy] .stage small{white-space:normal}
+/* 一、二年級：直接點下一個框 */
+.clue .tap-me{display:none}
+.clue.ready{border-style:solid;border-color:var(--accent);cursor:pointer;color:var(--ink);animation:breathe 1.8s ease-in-out infinite}
+.clue.ready .n{border-color:var(--accent);color:var(--accent)}
+.clue.ready .tap-me{display:inline-block;margin-left:auto;background:var(--accent);color:var(--on-accent);border-radius:999px;padding:.15rem .8rem;font-size:.85rem;white-space:nowrap}
+.peek-b.nudge{animation:nudge .45s}
+@keyframes nudge{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+[data-calm] .clue.ready,[data-calm] .peek-b.nudge{animation:none}
 </style>
 </head>
 <body>
@@ -1127,7 +1135,7 @@ const U=[
   gen(g){const t=g.int(0,2);
    if(t===0){const [kA,kB]=g.shuffle(KINDS.slice()).slice(0,2);const a=g.int(3,9);const b=g.pick([a,g.int(3,9),g.int(3,9)]);const want=g.int(0,1);
     const opts=[nm(kA),nm(kB),'一樣多'];const ai=a===b?2:((want?a>b:a<b)?0:1);
-    return{q:`${nm(kA)}和${nm(kB)}，哪一種比較${want?'多':'少'}？`,v:matchV(a,b,kA,kB),steps:[{p:'一個對一個連起來，有沒有多出來的？',ans:ch2(['有','沒有'],a===b?1:0)},...(a===b?[]:[{p:'哪一種有多出來？',ans:ch2([nm(kA),nm(kB)],a>b?0:1)}])],ask:`哪一種比較${want?'多':'少'}？`,ans:ch2(opts,ai)};}
+    return{q:`${nm(kA)}和${nm(kB)}，哪一種比較${want?'多':'少'}？`,v:matchV(a,b,kA,kB),steps:[{p:'一個對一個連起來，有沒有多出來的？',ans:ch2(['有','沒有'],a===b?1:0)},...(a===b?[]:[{p:'哪一種有多出來？',ans:ch2([nm(kA),nm(kB)],a>b?0:1),hint:'有多出來、沒有配到的那一種比較多。'},...(want?[]:[{p:'有多出來的比較多，另一種就比較少。比較少的是？',ans:ch2([nm(kA),nm(kB)],a<b?0:1)}])])],ask:`哪一種比較${want?'多':'少'}？`,ans:ch2(opts,ai)};}
    if(t===1){let a,b;do{a=g.int(1,10);b=g.int(1,10);}while(a===b);const want=g.int(0,1);const ai=(want?a>b:a<b)?0:1;
     return{q:`${a} 個和 ${b} 個，哪一個比較${want?'多':'少'}？`,v:'',steps:[{p:`從 1 開始數，先數到 ${Math.min(a,b)} 還是 ${Math.max(a,b)}？`,ans:ch2([String(Math.min(a,b)),String(Math.max(a,b))],0)},{p:`後數到的比較多。哪一個比較${want?'多':'少'}？`,ans:ch2([`${a} 個`,`${b} 個`],ai)}],ask:`哪一個比較${want?'多':'少'}？`,ans:ch2([`${a} 個`,`${b} 個`],ai)};}
    const p=g.int(4,9),c=g.pick([p-1,p,p+1,p+2]);const fin=ch2(['夠','不夠'],c>=p?0:1);
@@ -1430,11 +1438,11 @@ const U=[
    {q:'7 隻白羊和 6 隻黑羊，哪一種比較多？',opts:['白羊','黑羊'],a:0,why:'7 比 6 大。'}],
   gen(g){const t=g.int(0,2);
    if(t===0){let a,b;do{a=g.int(1,30);b=g.int(1,30);}while(a===b);const want=g.int(0,1);const ai=(want?a>b:a<b)?0:1;
-    return{q:`<b>${a}</b> 和 <b>${b}</b>，哪一個比較${want?'大':'小'}？`,v:'',steps:[{p:`從 1 開始數，先數到 ${Math.min(a,b)} 還是 ${Math.max(a,b)}？`,ans:ch2([String(Math.min(a,b)),String(Math.max(a,b))],0)}],ask:`哪一個比較${want?'大':'小'}？`,ans:ch2([String(a),String(b)],ai)};}
+    return{q:`<b>${a}</b> 和 <b>${b}</b>，哪一個比較${want?'大':'小'}？`,v:'',steps:[{p:`從 1 開始數，先數到 ${Math.min(a,b)} 還是 ${Math.max(a,b)}？`,ans:ch2([String(Math.min(a,b)),String(Math.max(a,b))],0)},{p:`先數到的比較小，後數到的比較大。比較${want?'大':'小'}的是？`,ans:ch2([String(Math.min(a,b)),String(Math.max(a,b))],want?1:0)}],ask:`哪一個比較${want?'大':'小'}？`,ans:ch2([String(a),String(b)],ai)};}
    if(t===1){const [kA,kB]=g.shuffle(KINDS.slice()).slice(0,2);let a,b;do{a=g.int(3,9);b=g.int(3,9);}while(a===b);
     return{q:`${nm(kA)}有 ${a} ${un(kA)}，${nm(kB)}有 ${b} ${un(kB)}，哪一種比較多？`,v:matchV(a,b,kA,kB),steps:[{p:'一個對一個連完，哪一種有多出來？',ans:ch2([nm(kA),nm(kB)],a>b?0:1)}],ask:`${a} 和 ${b}，哪一個比較大？`,ans:ch2([String(a),String(b)],a>b?0:1)};}
    const ns=g.shuffle([g.int(1,9),g.int(10,19),g.int(20,30)]);const want=g.int(0,1);const tgt=want?Math.max(...ns):Math.min(...ns);
-   return{q:`<b>${ns.join('、')}</b>，哪一個${want?'最大':'最小'}？`,v:'',steps:[{p:'哪一個是二十幾（或 30）？',ans:ch2(ns.map(String),ns.indexOf(Math.max(...ns)))},{p:`哪一個${want?'最大':'最小'}？`,ans:ch2(ns.map(String),ns.indexOf(tgt))}],ask:`哪一個${want?'最大':'最小'}？`,ans:ch2(ns.map(String),ns.indexOf(tgt))};},
+   return{q:`<b>${ns.join('、')}</b>，哪一個${want?'最大':'最小'}？`,v:'',steps:[want?{p:'哪一個是二十幾（或 30）？',ans:ch2(ns.map(String),ns.indexOf(Math.max(...ns))),hint:'二十幾比十幾大，十幾又比一位數大。'}:{p:'哪一個比 10 小（只有一位數）？',ans:ch2(ns.map(String),ns.indexOf(Math.min(...ns))),hint:'一位數比十幾、二十幾都小。'}],ask:`哪一個${want?'最大':'最小'}？`,ans:ch2(ns.map(String),ns.indexOf(tgt))};},
   fix:'後數到的數比較大；先看是十幾還是二十幾，二十幾比十幾大。'}
 ]},
 {name:'時間',topics:'事件的先後・幾點鐘・幾點半・我的一天・時間的前後',glyph:clockV(3,0,44),levels:[
@@ -1522,7 +1530,7 @@ const U=[
 ];
 
 /* ---------- 注音：每個國字右邊加注音（設定裡可以關掉） ---------- */
-const ZY_RAW=`一ㄧ 七ㄑㄧ 三ㄙㄢ 上ㄕㄤˋ 下ㄒㄧㄚˋ 不ㄅㄨˋ 丙ㄅㄧㄥˇ 中ㄓㄨㄥ 久ㄐㄧㄡˇ 之ㄓ 乘ㄔㄥˊ 乙ㄧˇ 九ㄐㄧㄡˇ 也ㄧㄝˇ 亂ㄌㄨㄢˋ 了˙ㄌㄜ 事ㄕˋ 二ㄦˋ 互ㄏㄨˋ 五ㄨˇ 些ㄒㄧㄝ 交ㄐㄧㄠ 人ㄖㄣˊ 什ㄕㄣˊ 他ㄊㄚ 以ㄧˇ 件ㄐㄧㄢˋ 任ㄖㄣˋ 休ㄒㄧㄡ 伸ㄕㄣ 但ㄉㄢˋ 位ㄨㄟˋ 住ㄓㄨˋ 何ㄏㄜˊ 作ㄗㄨㄛˋ 你ㄋㄧˇ 佳ㄐㄧㄚ 來ㄌㄞˊ 例ㄌㄧˋ 依ㄧ 便ㄅㄧㄢˋ 係ㄒㄧˋ 保ㄅㄠˇ 信ㄒㄧㄣˋ 個˙ㄍㄜ 倍ㄅㄟˋ 們˙ㄇㄣ 倒ㄉㄠˋ 候˙ㄏㄡ 借ㄐㄧㄝˋ 假ㄐㄧㄚˇ 做ㄗㄨㄛˋ 停ㄊㄧㄥˊ 備ㄅㄟˋ 元ㄩㄢˊ 先ㄒㄧㄢ 光ㄍㄨㄤ 入ㄖㄨˋ 內ㄋㄟˋ 全ㄑㄩㄢˊ 兩ㄌㄧㄤˇ 八ㄅㄚ 公ㄍㄨㄥ 六ㄌㄧㄡˋ 共ㄍㄨㄥˋ 其ㄑㄧˊ 典ㄉㄧㄢˇ 冊ㄘㄜˋ 再ㄗㄞˋ 冠ㄍㄨㄢˋ 冷ㄌㄥˇ 出ㄔㄨ 分ㄈㄣ 切ㄑㄧㄝ 判ㄆㄢˋ 別ㄅㄧㄝˊ 刪ㄕㄢ 到ㄉㄠˋ 刷ㄕㄨㄚ 前ㄑㄧㄢˊ 剛ㄍㄤ 剩ㄕㄥˋ 剪ㄐㄧㄢˇ 力ㄌㄧˋ 功ㄍㄨㄥ 加ㄐㄧㄚ 努ㄋㄨˇ 勇ㄩㄥˇ 動ㄉㄨㄥˋ 勵ㄌㄧˋ 勾ㄍㄡ 包ㄅㄠ 匙ㄔˊ 十ㄕˊ 升ㄕㄥ 午ㄨˇ 半ㄅㄢˋ 博ㄅㄛˊ 卡ㄎㄚˇ 卷ㄐㄩㄢˋ 厚ㄏㄡˋ 原ㄩㄢˊ 去ㄑㄩˋ 參ㄘㄢ 又ㄧㄡˋ 友ㄧㄡˇ 反ㄈㄢˇ 口ㄎㄡˇ 另ㄌㄧㄥˋ 只ㄓˇ 叫ㄐㄧㄠˋ 叭˙ㄅㄚ 可ㄎㄜˇ 台ㄊㄞˊ 右ㄧㄡˋ 吃ㄔ 各ㄍㄜˋ 合ㄏㄜˊ 同ㄊㄨㄥˊ 向ㄒㄧㄤˋ 呢˙ㄋㄜ 周ㄓㄡ 呱ㄍㄨㄚ 味ㄨㄟˋ 和ㄏㄢˋ 哪ㄋㄚˇ 唸ㄋㄧㄢˋ 念ㄋㄧㄢˋ 商ㄕㄤ 喇ㄌㄚˇ 喔ㄛ 喝ㄏㄜ 單ㄉㄢ 嗎˙ㄇㄚ 器ㄑㄧˋ 囉˙ㄌㄨㄛ 四ㄙˋ 回ㄏㄨㄟˊ 因ㄧㄣ 圈ㄑㄩㄢ 圍ㄨㄟˊ 園ㄩㄢˊ 圓ㄩㄢˊ 圖ㄊㄨˊ 在ㄗㄞˋ 地ㄉㄧˋ 均ㄐㄩㄣ 坐ㄗㄨㄛˋ 基ㄐㄧ 堆ㄉㄨㄟ 場ㄔㄤˊ 塊ㄎㄨㄞˋ 塗ㄊㄨˊ 塘ㄊㄤˊ 填ㄊㄧㄢˊ 士ㄕˋ 外ㄨㄞˋ 多ㄉㄨㄛ 夠ㄍㄡˋ 大ㄉㄚˋ 天ㄊㄧㄢ 太ㄊㄞˋ 套ㄊㄠˋ 奶ㄋㄞˇ 好ㄏㄠˇ 始ㄕˇ 媽ㄇㄚ 子˙ㄗ 字ㄗˋ 存ㄘㄨㄣˊ 學ㄒㄩㄝˊ 它ㄊㄚ 完ㄨㄢˊ 定ㄉㄧㄥˋ 室ㄕˋ 害ㄏㄞˋ 家ㄐㄧㄚ 容ㄖㄨㄥˊ 寫ㄒㄧㄝˇ 寬ㄎㄨㄢ 封ㄈㄥ 對ㄉㄨㄟˋ 小ㄒㄧㄠˇ 少ㄕㄠˇ 就ㄐㄧㄡˋ 尺ㄔˇ 屋ㄨ 層ㄘㄥˊ 左ㄗㄨㄛˇ 差ㄔㄚ 己ㄐㄧˇ 已ㄧˇ 帆ㄈㄢˊ 師ㄕ 帶ㄉㄞˋ 常ㄔㄤˊ 帽ㄇㄠˋ 幅ㄈㄨˊ 幕ㄇㄨˋ 平ㄆㄧㄥˊ 幾ㄐㄧˇ 床ㄔㄨㄤˊ 序ㄒㄩˋ 底ㄉㄧˇ 度ㄉㄨˋ 廂ㄒㄧㄤ 建ㄐㄧㄢˋ 式ㄕˋ 弧ㄏㄨˊ 張ㄓㄤ 彎ㄨㄢ 形ㄒㄧㄥˊ 往ㄨㄤˇ 很ㄏㄣˇ 律ㄌㄩˋ 後ㄏㄡˋ 徑ㄐㄧㄥˋ 得˙ㄉㄜ 從ㄘㄨㄥˊ 心ㄒㄧㄣ 忘ㄨㄤˋ 快ㄎㄨㄞˋ 怎ㄗㄣˇ 性ㄒㄧㄥˋ 情ㄑㄧㄥˊ 想ㄒㄧㄤˇ 愈ㄩˋ 慢ㄇㄢˋ 慶ㄑㄧㄥˋ 懂ㄉㄨㄥˇ 應ㄧㄥ 成ㄔㄥˊ 我ㄨㄛˇ 或ㄏㄨㄛˋ 戰ㄓㄢˋ 戲ㄒㄧˋ 戴ㄉㄞˋ 房ㄈㄤˊ 所ㄙㄨㄛˇ 扇ㄕㄢˋ 手ㄕㄡˇ 才ㄘㄞˊ 打ㄉㄚˇ 找ㄓㄠˇ 把ㄅㄚˇ 投ㄊㄡˊ 拉ㄌㄚ 拼ㄆㄧㄣ 拿ㄋㄚˊ 持ㄔˊ 指ㄓˇ 按ㄢˋ 挑ㄊㄧㄠˇ 挖ㄨㄚ 掃ㄙㄠˇ 掉ㄉㄧㄠˋ 排ㄆㄞˊ 探ㄊㄢˋ 接ㄐㄧㄝ 推ㄊㄨㄟ 描ㄇㄧㄠˊ 提ㄊㄧˊ 換ㄏㄨㄢˋ 撈ㄌㄠ 撿ㄐㄧㄢˇ 操ㄘㄠ 改ㄍㄞˇ 放ㄈㄤˋ 敏ㄇㄧㄣˇ 教ㄐㄧㄠˋ 整ㄓㄥˇ 數ㄕㄨˇ 新ㄒㄧㄣ 斷ㄉㄨㄢˋ 方ㄈㄤ 於ㄩˊ 旁ㄆㄤˊ 旗ㄑㄧˊ 早ㄗㄠˇ 明ㄇㄧㄥˊ 易ㄧˋ 星ㄒㄧㄥ 是ㄕˋ 時ㄕˊ 晚ㄨㄢˇ 曲ㄑㄩ 更ㄍㄥˋ 書ㄕㄨ 最ㄗㄨㄟˋ 會ㄏㄨㄟˋ 有ㄧㄡˇ 朋ㄆㄥˊ 朗ㄌㄤˇ 木ㄇㄨˋ 本ㄅㄣˇ 朵ㄉㄨㄛˇ 杯ㄅㄟ 東ㄉㄨㄥ 林ㄌㄧㄣˊ 果ㄍㄨㄛˇ 枝ㄓ 查ㄔㄚˊ 柴ㄔㄞˊ 校ㄒㄧㄠˋ 根ㄍㄣ 格ㄍㄜˊ 框ㄎㄨㄤ 案ㄢˋ 桌ㄓㄨㄛ 條ㄊㄧㄠˊ 梯ㄊㄧ 棒ㄅㄤˋ 椅ㄧˇ 模ㄇㄛˊ 樣ㄧㄤˋ 樹ㄕㄨˋ 機ㄐㄧ 檢ㄐㄧㄢˇ 櫃ㄍㄨㄟˋ 次ㄘˋ 正ㄓㄥˋ 步ㄅㄨˋ 母ㄇㄨˇ 每ㄇㄟˇ 比ㄅㄧˇ 氣ㄑㄧˋ 水ㄕㄨㄟˇ 求ㄑㄧㄡˊ 池ㄔˊ 汽ㄑㄧˋ 沒ㄇㄟˊ 油ㄧㄡˊ 法ㄈㄚˇ 泳ㄩㄥˇ 洗ㄒㄧˇ 洞ㄉㄨㄥˋ 淡ㄉㄢˋ 混ㄏㄨㄣˋ 減ㄐㄧㄢˇ 測ㄘㄜˋ 游ㄧㄡˊ 湯ㄊㄤ 準ㄓㄨㄣˇ 溜ㄌㄧㄡ 滑ㄏㄨㄚˊ 滾ㄍㄨㄣˇ 滿ㄇㄢˇ 漏ㄌㄡˋ 演ㄧㄢˇ 澡ㄗㄠˇ 瀏ㄌㄧㄡˊ 火ㄏㄨㄛˇ 灰ㄏㄨㄟ 照ㄓㄠˋ 煮ㄓㄨˇ 熟ㄕㄡˊ 熱ㄖㄜˋ 片ㄆㄧㄢˋ 版ㄅㄢˇ 牙ㄧㄚˊ 牛ㄋㄧㄡˊ 物ㄨˋ 特ㄊㄜˋ 狀ㄓㄨㄤˋ 猜ㄘㄞ 獎ㄐㄧㄤˇ 率ㄌㄩˋ 玩ㄨㄢˊ 現ㄒㄧㄢˋ 球ㄑㄧㄡˊ 理ㄌㄧˇ 環ㄏㄨㄢˊ 瓢ㄆㄧㄠˊ 瓶ㄆㄧㄥˊ 生ㄕㄥ 用ㄩㄥˋ 甲ㄐㄧㄚˇ 番ㄈㄢ 畫ㄏㄨㄚˋ 當ㄉㄤ 疊ㄉㄧㄝˊ 發ㄈㄚ 白ㄅㄞˊ 的˙ㄉㄜ 皮ㄆㄧˊ 盒ㄏㄜˊ 盤ㄆㄢˊ 目ㄇㄨˋ 直ㄓˊ 相ㄒㄧㄤ 看ㄎㄢˋ 真ㄓㄣ 眨ㄓㄚˇ 眼ㄧㄢˇ 睛˙ㄐㄧㄥ 知ㄓ 短ㄉㄨㄢˇ 矮ㄞˇ 碗ㄨㄢˇ 確ㄑㄩㄝˋ 碼ㄇㄚˇ 礎ㄔㄨˇ 示ㄕˋ 禮ㄌㄧˇ 秒ㄇㄧㄠˇ 移ㄧˊ 程ㄔㄥˊ 種ㄓㄨㄥˇ 積ㄐㄧ 穩ㄨㄣˇ 空ㄎㄨㄥ 穿ㄔㄨㄢ 立ㄌㄧˋ 站ㄓㄢˋ 章ㄓㄤ 端ㄉㄨㄢ 競ㄐㄧㄥˋ 符ㄈㄨˊ 第ㄉㄧˋ 筆ㄅㄧˇ 等ㄉㄥˇ 答ㄉㄚˊ 算ㄙㄨㄢˋ 管ㄍㄨㄢˇ 箱ㄒㄧㄤ 節ㄐㄧㄝˊ 簡ㄐㄧㄢˇ 籃ㄌㄢˊ 精ㄐㄧㄥ 糕ㄍㄠ 糖ㄊㄤˊ 紀ㄐㄧˋ 約ㄩㄝ 紅ㄏㄨㄥˊ 紙ㄓˇ 級ㄐㄧˊ 索ㄙㄨㄛˇ 結ㄐㄧㄝˊ 給ㄍㄟˇ 經ㄐㄧㄥ 綜ㄗㄨㄥˋ 線ㄒㄧㄢˋ 緞ㄉㄨㄢˋ 編ㄅㄧㄢ 練ㄌㄧㄢˋ 總ㄗㄨㄥˇ 績ㄐㄧ 繩ㄕㄥˊ 繼ㄐㄧˋ 續ㄒㄩˋ 缸ㄍㄤ 罐ㄍㄨㄢˋ 置ㄓˋ 羊ㄧㄤˊ 美ㄇㄟˇ 習ㄒㄧˊ 翰ㄏㄢˋ 老ㄌㄠˇ 考ㄎㄠˇ 聽ㄊㄧㄥ 背ㄅㄟˋ 能ㄋㄥˊ 腦ㄋㄠˇ 腳ㄐㄧㄠˇ 臉ㄌㄧㄢˇ 自ㄗˋ 與ㄩˇ 船ㄔㄨㄢˊ 色ㄙㄜˋ 花ㄏㄨㄚ 茄ㄑㄧㄝˊ 葉ㄧㄝˋ 著˙ㄓㄜ 薄ㄅㄠˊ 藍ㄌㄢˊ 蘋ㄆㄧㄥˊ 虛ㄒㄩ 號ㄏㄠˋ 蛋ㄉㄢˋ 螞ㄇㄚˇ 螢ㄧㄥˊ 蟲ㄔㄨㄥˊ 蟻ㄧˇ 蠟ㄌㄚˋ 表ㄅㄧㄠˇ 被ㄅㄟˋ 裝ㄓㄨㄤ 裡ㄌㄧˇ 複ㄈㄨˋ 襪ㄨㄚˋ 西ㄒㄧ 要ㄧㄠˋ 規ㄍㄨㄟ 覽ㄌㄢˇ 角ㄐㄧㄠˇ 解ㄐㄧㄝˇ 計ㄐㄧˋ 訓ㄒㄩㄣˋ 記ㄐㄧˋ 設ㄕㄜˋ 評ㄆㄧㄥˊ 試ㄕˋ 話ㄏㄨㄚˋ 認ㄖㄣˋ 說ㄕㄨㄛ 誰ㄕㄟˊ 課ㄎㄜˋ 請ㄑㄧㄥˇ 識ㄕˋ 議ㄧˋ 讀ㄉㄨˊ 變ㄅㄧㄢˋ 貓ㄇㄠ 買ㄇㄞˇ 貼ㄊㄧㄝ 賣ㄇㄞˋ 質ㄓˊ 賽ㄙㄞˋ 走ㄗㄡˇ 起ㄑㄧˇ 超ㄔㄠ 越ㄩㄝˋ 趣ㄑㄩˋ 跑ㄆㄠˇ 距ㄐㄩˋ 跟ㄍㄣ 路ㄌㄨˋ 跳ㄊㄧㄠˋ 踏ㄊㄚˋ 蹲ㄉㄨㄣ 身ㄕㄣ 躺ㄊㄤˇ 車ㄔㄜ 軍ㄐㄩㄣ 較ㄐㄧㄠˋ 輕ㄑㄧㄥ 輛ㄌㄧㄤˋ 近ㄐㄧㄣˋ 退ㄊㄨㄟˋ 送ㄙㄨㄥˋ 這ㄓㄜˋ 通ㄊㄨㄥ 逛ㄍㄨㄤˋ 速ㄙㄨˋ 連ㄌㄧㄢˊ 進ㄐㄧㄣˋ 遊ㄧㄡˊ 遍ㄅㄧㄢˋ 過ㄍㄨㄛˋ 道ㄉㄠˋ 達ㄉㄚˊ 遠ㄩㄢˇ 適ㄕˋ 選ㄒㄩㄢˇ 還ㄏㄞˊ 邊ㄅㄧㄢ 那ㄋㄚˋ 部ㄅㄨˋ 都ㄉㄡ 配ㄆㄟˋ 里ㄌㄧˇ 重ㄓㄨㄥˋ 量ㄌㄧㄤˊ 針ㄓㄣ 鈕ㄋㄧㄡˇ 鉛ㄑㄧㄢ 錄ㄌㄨˋ 錯ㄘㄨㄛˋ 鍵ㄐㄧㄢˋ 鐘ㄓㄨㄥ 長ㄔㄤˊ 門ㄇㄣˊ 開ㄎㄞ 間ㄐㄧㄢ 關ㄍㄨㄢ 限ㄒㄧㄢˋ 除ㄔㄨˊ 階ㄐㄧㄝ 隨ㄙㄨㄟˊ 險ㄒㄧㄢˇ 隻ㄓ 集ㄐㄧˊ 離ㄌㄧˊ 零ㄌㄧㄥˊ 電ㄉㄧㄢˋ 需ㄒㄩ 青ㄑㄧㄥ 靠ㄎㄠˋ 面ㄇㄧㄢˋ 鞋ㄒㄧㄝˊ 頁ㄧㄝˋ 頂ㄉㄧㄥˇ 項ㄒㄧㄤˋ 順ㄕㄨㄣˋ 頓ㄉㄨㄣˋ 頭ㄊㄡˊ 顆ㄎㄜ 題ㄊㄧˊ 顏ㄧㄢˊ 類ㄌㄟˋ 顯ㄒㄧㄢˇ 飛ㄈㄟ 餐ㄘㄢ 騎ㄑㄧˊ 驗ㄧㄢˋ 驟ㄗㄡˋ 骰ㄊㄡˊ 體ㄊㄧˇ 高ㄍㄠ 魚ㄩˊ 鳥ㄋㄧㄠˇ 鴨ㄧㄚ 麼˙ㄇㄜ 黃ㄏㄨㄤˊ 黑ㄏㄟ 點ㄉㄧㄢˇ 齊ㄑㄧˊ 齡ㄌㄧㄥˊ 注ㄓㄨˋ 音ㄧㄣ 再ㄗㄞˋ`;
+const ZY_RAW=`一ㄧ 七ㄑㄧ 三ㄙㄢ 上ㄕㄤˋ 下ㄒㄧㄚˋ 不ㄅㄨˋ 丙ㄅㄧㄥˇ 中ㄓㄨㄥ 久ㄐㄧㄡˇ 之ㄓ 乘ㄔㄥˊ 乙ㄧˇ 九ㄐㄧㄡˇ 也ㄧㄝˇ 亂ㄌㄨㄢˋ 了˙ㄌㄜ 事ㄕˋ 二ㄦˋ 互ㄏㄨˋ 五ㄨˇ 些ㄒㄧㄝ 交ㄐㄧㄠ 人ㄖㄣˊ 什ㄕㄣˊ 他ㄊㄚ 以ㄧˇ 件ㄐㄧㄢˋ 任ㄖㄣˋ 休ㄒㄧㄡ 伸ㄕㄣ 但ㄉㄢˋ 位ㄨㄟˋ 住ㄓㄨˋ 何ㄏㄜˊ 作ㄗㄨㄛˋ 你ㄋㄧˇ 佳ㄐㄧㄚ 來ㄌㄞˊ 例ㄌㄧˋ 依ㄧ 便ㄅㄧㄢˋ 係ㄒㄧˋ 保ㄅㄠˇ 信ㄒㄧㄣˋ 個˙ㄍㄜ 倍ㄅㄟˋ 們˙ㄇㄣ 倒ㄉㄠˋ 候˙ㄏㄡ 借ㄐㄧㄝˋ 假ㄐㄧㄚˇ 做ㄗㄨㄛˋ 停ㄊㄧㄥˊ 備ㄅㄟˋ 元ㄩㄢˊ 先ㄒㄧㄢ 光ㄍㄨㄤ 入ㄖㄨˋ 內ㄋㄟˋ 全ㄑㄩㄢˊ 兩ㄌㄧㄤˇ 八ㄅㄚ 公ㄍㄨㄥ 六ㄌㄧㄡˋ 共ㄍㄨㄥˋ 其ㄑㄧˊ 典ㄉㄧㄢˇ 冊ㄘㄜˋ 再ㄗㄞˋ 冠ㄍㄨㄢˋ 冷ㄌㄥˇ 出ㄔㄨ 分ㄈㄣ 切ㄑㄧㄝ 判ㄆㄢˋ 別ㄅㄧㄝˊ 刪ㄕㄢ 到ㄉㄠˋ 刷ㄕㄨㄚ 前ㄑㄧㄢˊ 剛ㄍㄤ 剩ㄕㄥˋ 剪ㄐㄧㄢˇ 力ㄌㄧˋ 功ㄍㄨㄥ 加ㄐㄧㄚ 努ㄋㄨˇ 勇ㄩㄥˇ 動ㄉㄨㄥˋ 勵ㄌㄧˋ 勾ㄍㄡ 包ㄅㄠ 匙ㄔˊ 十ㄕˊ 升ㄕㄥ 午ㄨˇ 半ㄅㄢˋ 博ㄅㄛˊ 卡ㄎㄚˇ 卷ㄐㄩㄢˋ 厚ㄏㄡˋ 原ㄩㄢˊ 去ㄑㄩˋ 參ㄘㄢ 又ㄧㄡˋ 友ㄧㄡˇ 反ㄈㄢˇ 口ㄎㄡˇ 另ㄌㄧㄥˋ 只ㄓˇ 叫ㄐㄧㄠˋ 叭˙ㄅㄚ 可ㄎㄜˇ 台ㄊㄞˊ 右ㄧㄡˋ 吃ㄔ 各ㄍㄜˋ 合ㄏㄜˊ 同ㄊㄨㄥˊ 向ㄒㄧㄤˋ 呢˙ㄋㄜ 周ㄓㄡ 呱ㄍㄨㄚ 味ㄨㄟˋ 和ㄏㄢˋ 哪ㄋㄚˇ 唸ㄋㄧㄢˋ 念ㄋㄧㄢˋ 商ㄕㄤ 喇ㄌㄚˇ 喔ㄛ 喝ㄏㄜ 單ㄉㄢ 嗎˙ㄇㄚ 器ㄑㄧˋ 囉˙ㄌㄨㄛ 四ㄙˋ 回ㄏㄨㄟˊ 因ㄧㄣ 圈ㄑㄩㄢ 圍ㄨㄟˊ 園ㄩㄢˊ 圓ㄩㄢˊ 圖ㄊㄨˊ 在ㄗㄞˋ 地ㄉㄧˋ 均ㄐㄩㄣ 坐ㄗㄨㄛˋ 基ㄐㄧ 堆ㄉㄨㄟ 場ㄔㄤˊ 塊ㄎㄨㄞˋ 塗ㄊㄨˊ 塘ㄊㄤˊ 填ㄊㄧㄢˊ 士ㄕˋ 外ㄨㄞˋ 多ㄉㄨㄛ 夠ㄍㄡˋ 大ㄉㄚˋ 天ㄊㄧㄢ 太ㄊㄞˋ 套ㄊㄠˋ 奶ㄋㄞˇ 好ㄏㄠˇ 始ㄕˇ 媽ㄇㄚ 子˙ㄗ 字ㄗˋ 存ㄘㄨㄣˊ 學ㄒㄩㄝˊ 它ㄊㄚ 完ㄨㄢˊ 定ㄉㄧㄥˋ 室ㄕˋ 害ㄏㄞˋ 家ㄐㄧㄚ 容ㄖㄨㄥˊ 寫ㄒㄧㄝˇ 寬ㄎㄨㄢ 封ㄈㄥ 對ㄉㄨㄟˋ 小ㄒㄧㄠˇ 少ㄕㄠˇ 就ㄐㄧㄡˋ 尺ㄔˇ 屋ㄨ 層ㄘㄥˊ 左ㄗㄨㄛˇ 差ㄔㄚ 己ㄐㄧˇ 已ㄧˇ 帆ㄈㄢˊ 師ㄕ 帶ㄉㄞˋ 常ㄔㄤˊ 帽ㄇㄠˋ 幅ㄈㄨˊ 幕ㄇㄨˋ 平ㄆㄧㄥˊ 幾ㄐㄧˇ 床ㄔㄨㄤˊ 序ㄒㄩˋ 底ㄉㄧˇ 度ㄉㄨˋ 廂ㄒㄧㄤ 建ㄐㄧㄢˋ 式ㄕˋ 弧ㄏㄨˊ 張ㄓㄤ 彎ㄨㄢ 形ㄒㄧㄥˊ 往ㄨㄤˇ 很ㄏㄣˇ 律ㄌㄩˋ 後ㄏㄡˋ 徑ㄐㄧㄥˋ 得˙ㄉㄜ 從ㄘㄨㄥˊ 心ㄒㄧㄣ 忘ㄨㄤˋ 快ㄎㄨㄞˋ 怎ㄗㄣˇ 性ㄒㄧㄥˋ 情ㄑㄧㄥˊ 想ㄒㄧㄤˇ 愈ㄩˋ 慢ㄇㄢˋ 慶ㄑㄧㄥˋ 懂ㄉㄨㄥˇ 應ㄧㄥ 成ㄔㄥˊ 我ㄨㄛˇ 或ㄏㄨㄛˋ 戰ㄓㄢˋ 戲ㄒㄧˋ 戴ㄉㄞˋ 房ㄈㄤˊ 所ㄙㄨㄛˇ 扇ㄕㄢˋ 手ㄕㄡˇ 才ㄘㄞˊ 打ㄉㄚˇ 找ㄓㄠˇ 把ㄅㄚˇ 投ㄊㄡˊ 拉ㄌㄚ 拼ㄆㄧㄣ 拿ㄋㄚˊ 持ㄔˊ 指ㄓˇ 按ㄢˋ 挑ㄊㄧㄠˇ 挖ㄨㄚ 掃ㄙㄠˇ 掉ㄉㄧㄠˋ 排ㄆㄞˊ 探ㄊㄢˋ 接ㄐㄧㄝ 推ㄊㄨㄟ 描ㄇㄧㄠˊ 提ㄊㄧˊ 換ㄏㄨㄢˋ 撈ㄌㄠ 撿ㄐㄧㄢˇ 操ㄘㄠ 改ㄍㄞˇ 放ㄈㄤˋ 敏ㄇㄧㄣˇ 教ㄐㄧㄠˋ 整ㄓㄥˇ 數ㄕㄨˇ 新ㄒㄧㄣ 斷ㄉㄨㄢˋ 方ㄈㄤ 於ㄩˊ 旁ㄆㄤˊ 旗ㄑㄧˊ 早ㄗㄠˇ 明ㄇㄧㄥˊ 易ㄧˋ 星ㄒㄧㄥ 是ㄕˋ 時ㄕˊ 晚ㄨㄢˇ 曲ㄑㄩ 更ㄍㄥˋ 書ㄕㄨ 最ㄗㄨㄟˋ 會ㄏㄨㄟˋ 有ㄧㄡˇ 朋ㄆㄥˊ 朗ㄌㄤˇ 木ㄇㄨˋ 本ㄅㄣˇ 朵ㄉㄨㄛˇ 杯ㄅㄟ 東ㄉㄨㄥ 林ㄌㄧㄣˊ 果ㄍㄨㄛˇ 枝ㄓ 查ㄔㄚˊ 柴ㄔㄞˊ 校ㄒㄧㄠˋ 根ㄍㄣ 格ㄍㄜˊ 框ㄎㄨㄤ 案ㄢˋ 桌ㄓㄨㄛ 條ㄊㄧㄠˊ 梯ㄊㄧ 棒ㄅㄤˋ 椅ㄧˇ 模ㄇㄛˊ 樣ㄧㄤˋ 樹ㄕㄨˋ 機ㄐㄧ 檢ㄐㄧㄢˇ 櫃ㄍㄨㄟˋ 次ㄘˋ 正ㄓㄥˋ 步ㄅㄨˋ 母ㄇㄨˇ 每ㄇㄟˇ 比ㄅㄧˇ 氣ㄑㄧˋ 水ㄕㄨㄟˇ 求ㄑㄧㄡˊ 池ㄔˊ 汽ㄑㄧˋ 沒ㄇㄟˊ 油ㄧㄡˊ 法ㄈㄚˇ 泳ㄩㄥˇ 洗ㄒㄧˇ 洞ㄉㄨㄥˋ 淡ㄉㄢˋ 混ㄏㄨㄣˋ 減ㄐㄧㄢˇ 測ㄘㄜˋ 游ㄧㄡˊ 湯ㄊㄤ 準ㄓㄨㄣˇ 溜ㄌㄧㄡ 滑ㄏㄨㄚˊ 滾ㄍㄨㄣˇ 滿ㄇㄢˇ 漏ㄌㄡˋ 演ㄧㄢˇ 澡ㄗㄠˇ 瀏ㄌㄧㄡˊ 火ㄏㄨㄛˇ 灰ㄏㄨㄟ 照ㄓㄠˋ 煮ㄓㄨˇ 熟ㄕㄡˊ 熱ㄖㄜˋ 片ㄆㄧㄢˋ 版ㄅㄢˇ 牙ㄧㄚˊ 牛ㄋㄧㄡˊ 物ㄨˋ 特ㄊㄜˋ 狀ㄓㄨㄤˋ 猜ㄘㄞ 獎ㄐㄧㄤˇ 率ㄌㄩˋ 玩ㄨㄢˊ 現ㄒㄧㄢˋ 球ㄑㄧㄡˊ 理ㄌㄧˇ 環ㄏㄨㄢˊ 瓢ㄆㄧㄠˊ 瓶ㄆㄧㄥˊ 生ㄕㄥ 用ㄩㄥˋ 甲ㄐㄧㄚˇ 番ㄈㄢ 畫ㄏㄨㄚˋ 當ㄉㄤ 疊ㄉㄧㄝˊ 發ㄈㄚ 白ㄅㄞˊ 的˙ㄉㄜ 皮ㄆㄧˊ 盒ㄏㄜˊ 盤ㄆㄢˊ 目ㄇㄨˋ 直ㄓˊ 相ㄒㄧㄤ 看ㄎㄢˋ 真ㄓㄣ 眨ㄓㄚˇ 眼ㄧㄢˇ 睛˙ㄐㄧㄥ 知ㄓ 短ㄉㄨㄢˇ 矮ㄞˇ 碗ㄨㄢˇ 確ㄑㄩㄝˋ 碼ㄇㄚˇ 礎ㄔㄨˇ 示ㄕˋ 禮ㄌㄧˇ 秒ㄇㄧㄠˇ 移ㄧˊ 程ㄔㄥˊ 種ㄓㄨㄥˇ 積ㄐㄧ 穩ㄨㄣˇ 空ㄎㄨㄥ 穿ㄔㄨㄢ 立ㄌㄧˋ 站ㄓㄢˋ 章ㄓㄤ 端ㄉㄨㄢ 競ㄐㄧㄥˋ 符ㄈㄨˊ 第ㄉㄧˋ 筆ㄅㄧˇ 等ㄉㄥˇ 答ㄉㄚˊ 算ㄙㄨㄢˋ 管ㄍㄨㄢˇ 箱ㄒㄧㄤ 節ㄐㄧㄝˊ 簡ㄐㄧㄢˇ 籃ㄌㄢˊ 精ㄐㄧㄥ 糕ㄍㄠ 糖ㄊㄤˊ 紀ㄐㄧˋ 約ㄩㄝ 紅ㄏㄨㄥˊ 紙ㄓˇ 級ㄐㄧˊ 索ㄙㄨㄛˇ 結ㄐㄧㄝˊ 給ㄍㄟˇ 經ㄐㄧㄥ 綜ㄗㄨㄥˋ 線ㄒㄧㄢˋ 緞ㄉㄨㄢˋ 編ㄅㄧㄢ 練ㄌㄧㄢˋ 總ㄗㄨㄥˇ 績ㄐㄧ 繩ㄕㄥˊ 繼ㄐㄧˋ 續ㄒㄩˋ 缸ㄍㄤ 罐ㄍㄨㄢˋ 置ㄓˋ 羊ㄧㄤˊ 美ㄇㄟˇ 習ㄒㄧˊ 翰ㄏㄢˋ 老ㄌㄠˇ 考ㄎㄠˇ 聽ㄊㄧㄥ 背ㄅㄟˋ 能ㄋㄥˊ 腦ㄋㄠˇ 腳ㄐㄧㄠˇ 臉ㄌㄧㄢˇ 自ㄗˋ 與ㄩˇ 船ㄔㄨㄢˊ 色ㄙㄜˋ 花ㄏㄨㄚ 茄ㄑㄧㄝˊ 葉ㄧㄝˋ 著˙ㄓㄜ 薄ㄅㄠˊ 藍ㄌㄢˊ 蘋ㄆㄧㄥˊ 虛ㄒㄩ 號ㄏㄠˋ 蛋ㄉㄢˋ 螞ㄇㄚˇ 螢ㄧㄥˊ 蟲ㄔㄨㄥˊ 蟻ㄧˇ 蠟ㄌㄚˋ 表ㄅㄧㄠˇ 被ㄅㄟˋ 裝ㄓㄨㄤ 裡ㄌㄧˇ 複ㄈㄨˋ 襪ㄨㄚˋ 西ㄒㄧ 要ㄧㄠˋ 規ㄍㄨㄟ 覽ㄌㄢˇ 角ㄐㄧㄠˇ 解ㄐㄧㄝˇ 計ㄐㄧˋ 訓ㄒㄩㄣˋ 記ㄐㄧˋ 設ㄕㄜˋ 評ㄆㄧㄥˊ 試ㄕˋ 話ㄏㄨㄚˋ 認ㄖㄣˋ 說ㄕㄨㄛ 誰ㄕㄟˊ 課ㄎㄜˋ 請ㄑㄧㄥˇ 識ㄕˋ 議ㄧˋ 讀ㄉㄨˊ 變ㄅㄧㄢˋ 貓ㄇㄠ 買ㄇㄞˇ 貼ㄊㄧㄝ 賣ㄇㄞˋ 質ㄓˊ 賽ㄙㄞˋ 走ㄗㄡˇ 起ㄑㄧˇ 超ㄔㄠ 越ㄩㄝˋ 趣ㄑㄩˋ 跑ㄆㄠˇ 距ㄐㄩˋ 跟ㄍㄣ 路ㄌㄨˋ 跳ㄊㄧㄠˋ 踏ㄊㄚˋ 蹲ㄉㄨㄣ 身ㄕㄣ 躺ㄊㄤˇ 車ㄔㄜ 軍ㄐㄩㄣ 較ㄐㄧㄠˋ 輕ㄑㄧㄥ 輛ㄌㄧㄤˋ 近ㄐㄧㄣˋ 退ㄊㄨㄟˋ 送ㄙㄨㄥˋ 這ㄓㄜˋ 通ㄊㄨㄥ 逛ㄍㄨㄤˋ 速ㄙㄨˋ 連ㄌㄧㄢˊ 進ㄐㄧㄣˋ 遊ㄧㄡˊ 遍ㄅㄧㄢˋ 過ㄍㄨㄛˋ 道ㄉㄠˋ 達ㄉㄚˊ 遠ㄩㄢˇ 適ㄕˋ 選ㄒㄩㄢˇ 還ㄏㄞˊ 邊ㄅㄧㄢ 那ㄋㄚˋ 部ㄅㄨˋ 都ㄉㄡ 配ㄆㄟˋ 里ㄌㄧˇ 重ㄓㄨㄥˋ 量ㄌㄧㄤˊ 針ㄓㄣ 鈕ㄋㄧㄡˇ 鉛ㄑㄧㄢ 錄ㄌㄨˋ 錯ㄘㄨㄛˋ 鍵ㄐㄧㄢˋ 鐘ㄓㄨㄥ 長ㄔㄤˊ 門ㄇㄣˊ 開ㄎㄞ 間ㄐㄧㄢ 關ㄍㄨㄢ 限ㄒㄧㄢˋ 除ㄔㄨˊ 階ㄐㄧㄝ 隨ㄙㄨㄟˊ 險ㄒㄧㄢˇ 隻ㄓ 集ㄐㄧˊ 離ㄌㄧˊ 零ㄌㄧㄥˊ 電ㄉㄧㄢˋ 需ㄒㄩ 青ㄑㄧㄥ 靠ㄎㄠˋ 面ㄇㄧㄢˋ 鞋ㄒㄧㄝˊ 頁ㄧㄝˋ 頂ㄉㄧㄥˇ 項ㄒㄧㄤˋ 順ㄕㄨㄣˋ 頓ㄉㄨㄣˋ 頭ㄊㄡˊ 顆ㄎㄜ 題ㄊㄧˊ 顏ㄧㄢˊ 類ㄌㄟˋ 顯ㄒㄧㄢˇ 飛ㄈㄟ 餐ㄘㄢ 騎ㄑㄧˊ 驗ㄧㄢˋ 驟ㄗㄡˋ 骰ㄊㄡˊ 體ㄊㄧˇ 高ㄍㄠ 魚ㄩˊ 鳥ㄋㄧㄠˇ 鴨ㄧㄚ 麼˙ㄇㄜ 黃ㄏㄨㄤˊ 黑ㄏㄟ 點ㄉㄧㄢˇ 齊ㄑㄧˊ 齡ㄌㄧㄥˊ 注ㄓㄨˋ 音ㄧㄣ 再ㄗㄞˋ 康ㄎㄤ 軒ㄒㄩㄢ 百ㄅㄞˇ 使ㄕˇ 錢ㄑㄧㄢˊ 幣ㄅㄧˋ 問ㄨㄣˋ 貝ㄅㄟˋ 殼ㄎㄜˊ 板ㄅㄢˇ 具ㄐㄩˋ 付ㄈㄨˋ 金ㄐㄧㄣ 額ㄜˊ 朝ㄔㄠˊ 尖ㄐㄧㄢ 風ㄈㄥ 箏ㄓㄥ 貴ㄍㄨㄟˋ 娃ㄨㄚˊ 宜ㄧˊ 恐ㄎㄨㄥˇ 龍ㄌㄨㄥˊ 昨ㄗㄨㄛˊ 今ㄐㄧㄣ 文ㄨㄣˊ 店ㄉㄧㄢˋ 膠ㄐㄧㄠ 年ㄋㄧㄢˊ 男ㄋㄢˊ 女ㄋㄩˇ 意ㄧˋ 列ㄌㄧㄝˋ 誤ㄨˋ 客ㄎㄜˋ 哥ㄍㄜ 弟ㄉㄧˋ 迴ㄏㄨㄟˊ 紋ㄨㄣˊ 留ㄌㄧㄡˊ 隙ㄒㄧˋ 橡ㄒㄧㄤˋ 擦ㄘㄚ 刻ㄎㄜˋ 段ㄉㄨㄢˋ 幫ㄅㄤ 忙ㄇㄤˊ 為ㄨㄟˋ 彈ㄉㄢˋ 珠ㄓㄨ 像ㄒㄧㄤˋ 偶ㄡˇ 鼻ㄅㄧˊ 豆ㄉㄡˋ 苗ㄇㄧㄠˊ 蓋ㄍㄞˋ 而ㄦˊ 郵ㄧㄡˊ 票ㄆㄧㄠˋ 視ㄕˋ 窗ㄔㄨㄤ 戶ㄏㄨˋ 墊ㄉㄧㄢˋ 占ㄓㄢˋ 棵ㄎㄜ 榕ㄖㄨㄥˊ 樟ㄓㄤ 桃ㄊㄠˊ 姐ㄐㄧㄝˇ 妹ㄇㄟˋ 靈ㄌㄧㄥˊ 決ㄐㄩㄝˊ 蛙ㄨㄚ 份ㄈㄣˋ 腿ㄊㄨㄟˇ 袋ㄉㄞˋ 插ㄔㄚ 束ㄕㄨˋ 思ㄙ 雙ㄕㄨㄤ 狗ㄍㄡˇ 輪ㄌㄨㄣˊ 蜘ㄓ 蛛ㄓㄨ 雞ㄐㄧ 昆ㄎㄨㄣ 彩ㄘㄞˇ 串ㄔㄨㄢˋ 葡ㄆㄨˊ 萄ㄊㄠˊ 盆ㄆㄣˊ 期ㄑㄧ 遞ㄉㄧˋ 低ㄉㄧ 粗ㄘㄨ 細ㄒㄧˋ 胖ㄆㄤˋ 汁ㄓ 柳ㄌㄧㄡˇ 橙ㄔㄥˊ 芭ㄅㄚ 樂ㄌㄜˋ 羽ㄩˇ 彤ㄊㄨㄥˊ 宥ㄧㄡˋ 翔ㄒㄧㄤˊ 壺ㄏㄨˊ 掂ㄉㄧㄢ 飲ㄧㄣˇ 料ㄌㄧㄠˋ 沉ㄔㄣˊ 感ㄍㄢˇ 覺ㄐㄩㄝˊ 壓ㄧㄚ 如ㄖㄨˊ 石ㄕˊ 棉ㄇㄧㄢˊ 鐵ㄊㄧㄝˇ 衛ㄨㄟˋ 橘ㄐㄩˊ 梨ㄌㄧˊ 香ㄒㄧㄤ 蕉ㄐㄧㄠ 摸ㄇㄛ 軟ㄖㄨㄢˇ 硬ㄧㄥˋ 雖ㄙㄨㄟ 然ㄖㄢˊ 卻ㄑㄩㄝˋ 實ㄕˊ 屬ㄕㄨˇ`;
 const ZY={};ZY_RAW.split(/\s+/).forEach(w=>{if(w)ZY[w[0]]=w.slice(1);});
 /* 破音字：[規則, 這個字在符合時的讀音]；規則裡用 ( ) 包住要改讀音的那個字 */
 const ZY_RULES=[
@@ -1530,13 +1538,15 @@ const ZY_RULES=[
   [/(?<=套|打|猜)(中)/g,'ㄓㄨㄥˋ'],
   [/(得)(?=到|\s*\d|星|分)/g,'ㄉㄜˊ'],
   [/(長)(?=出|大|高了|什麼)/g,'ㄓㄤˇ'],
-  [/(重)(?=複|來|新|做|數)/g,'ㄔㄨㄥˊ'],
+  [/(重)(?=複|來|新|做|數|疊)/g,'ㄔㄨㄥˊ'],
   [/(種)(?=下|樹|花|菜)/g,'ㄓㄨㄥˋ'],[/(?<=種)(子)/g,'ㄗˇ'],[/(?<=分)(子)/g,'ㄗˇ'],
   [/(倒)(?=下)/g,'ㄉㄠˇ'],[/(?<=沒)(倒)/g,'ㄉㄠˇ'],
   [/(?<=對)(應)/g,'ㄧㄥˋ'],
   [/(?<=東)(西)/g,'˙ㄒㄧ'],[/(?<=朋)(友)/g,'˙ㄧㄡ'],[/(?<=知)(道)/g,'˙ㄉㄠ'],[/(?<=事)(情)/g,'˙ㄑㄧㄥ'],
   [/(?<=媽)(媽)/g,'˙ㄇㄚ'],[/(?<=奶)(奶)/g,'˙ㄋㄞ'],
-  [/(?<=喇)(叭)/g,'˙ㄅㄚ'],[/(?<=湯)(匙)/g,'ㄔˊ']
+  [/(?<=喇)(叭)/g,'˙ㄅㄚ'],[/(?<=湯)(匙)/g,'ㄔˊ'],
+  [/(當)(?=作|成|\s*\d)/g,'ㄉㄤˋ'],[/(便)(?=宜)/g,'ㄆㄧㄢˊ'],[/(?<=便)(宜)/g,'˙ㄧ'],[/(?<=哥)(哥)/g,'˙ㄍㄜ'],[/(?<=弟)(弟)/g,'˙ㄉㄧ'],[/(?<=姐)(姐)/g,'˙ㄐㄧㄝ'],[/(?<=妹)(妹)/g,'˙ㄇㄟ'],[/(?<=娃)(娃)/g,'˙ㄨㄚ'],
+  [/(?<=風)(箏)/g,'˙ㄓㄥ'],[/(?<=葡)(萄)/g,'˙ㄊㄠ'],[/(?<=石|木)(頭)/g,'˙ㄊㄡ'],[/(?<=[容重數水])(量)/g,'ㄌㄧㄤˋ']
 ];
 function zyReadings(t){
   const r=[...t].map(c=>ZY[c]||null);
@@ -1550,7 +1560,7 @@ function zyCell(ch,rd){
   if(/[ˊˇˋ]$/.test(b)){tone=b.slice(-1);b=b.slice(0,-1);}
   return `<z-y><z-c>${ch}</z-c><z-b aria-hidden="true"><z-s>${light?'<z-i class="lt">˙</z-i>':''}${[...b].map(s=>`<z-i>${s}</z-i>`).join('')}</z-s><z-t class="n${b.length}">${tone}</z-t></z-b></z-y>`;
 }
-const ZY_SKIP='svg,script,style,textarea,input,select,small,.brand-mark,z-y,z-b,.no-zy,.pad,.dkey,.calc';
+const ZY_SKIP='svg,script,style,textarea,input,select,small,.note,#settings,.brand-mark,z-y,z-b,.no-zy,.pad,.dkey,.calc';
 function zyNode(n){
   if(n.nodeType===3){const t=n.nodeValue;if(!/\p{Script=Han}/u.test(t))return;const p=n.parentElement;if(!p||p.closest(ZY_SKIP))return;
     const rd=zyReadings(t);let html='';[...t].forEach((c,i)=>{html+=rd[i]?zyCell(c,rd[i]):c.replace(/&/g,'&amp;').replace(/</g,'&lt;');});
@@ -2155,24 +2165,32 @@ const stAChal=(box,u,l,L,goStage)=>stCan(box,u,l,L,goStage,true);
 const peekify=t=>t.replace(/\{\{([\s\S]+?)\}\}/g,(_,x)=>`<span class="peek"><button class="peek-b no-say" type="button" aria-label="點開答案">？</button><span class="peek-v" hidden>${x}</span></span>`);
 const CIRC='①②③④⑤⑥⑦⑧';
 function stLook(box,u,l,L,goStage){
-  const X=L.look,N=X.steps.length;let i=0;
+  /* 一、二年級：不用「下一步」按鈕，看完答案後直接點下一個框；最後一個框看完，自動出現重點 */
+  const X=L.look,N=X.steps.length;let i=0,keyShown=false;
   box.innerHTML=`<div class="split">
     <div class="sticky"><div class="card"><span class="ex-tag">例題</span><div class="prompt"><div class="txt">${X.ex}</div></div><div class="vis-box" id="lv"></div></div></div>
     <div><div class="card"><div class="clue-head"><b>解題線索</b><span id="lc"></span></div><ol class="clues" id="cl"></ol>
-      <p class="look-hint">先想一想，再點 <b style="color:var(--accent)">？</b> 看答案。</p>
-      <div class="navrow"><button class="btn ghost" type="button" id="lp">${ICON.back}上一步</button><button class="btn" type="button" id="ln"></button></div>
+      <p class="look-hint" id="lh"></p>
+      <div class="navrow"><button class="btn" type="button" id="ln" hidden></button></div>
       <div id="lk"></div></div></div></div>`;
   $('.prompt',box).prepend(sayBtn($('.txt',box)));
-  const vis=$('#lv',box),cl=$('#cl',box),nb=$('#ln',box),pb=$('#lp',box),kb=$('#lk',box);
+  const vis=$('#lv',box),cl=$('#cl',box),nb=$('#ln',box),kb=$('#lk',box),lh=$('#lh',box);
   function visFor(j){for(let k=j;k>=0;k--)if(X.steps[k].v)return X.steps[k].v;return '';}
   function unrevealed(){return $$('.clue.cur .peek-v[hidden]',cl).length;}
-  function setBtn(){
-    if(unrevealed())nb.innerHTML=`${ICON.eye}看答案`;
-    else nb.innerHTML=i<N-1?`下一步${ICON.next}`:`看重點${ICON.next}`;
+  function hint(){
+    if(unrevealed())lh.innerHTML=`先想一想，再點 <b style="color:var(--accent)">？</b> 看答案。`;
+    else if(i<N-1)lh.innerHTML=`看懂了嗎？點下面第 ${CIRC[i+1]} 個框，看下一個線索。`;
+    else lh.innerHTML='';
+  }
+  function refresh(){
+    const nx=$(`.clue[data-j="${i+1}"]`,cl);
+    if(nx){const ok=!unrevealed();nx.classList.toggle('ready',ok);$('.clue-k',nx).setAttribute('aria-label',ok?`看第 ${i+2} 個線索`:'先看完上面的答案');}
+    hint();
+    if(i===N-1&&!unrevealed()&&!keyShown)setTimeout(()=>{if(!keyShown&&box.isConnected)showKey();},500);
   }
   /* 重點: the student reads it aloud once; "我念完了" unlocks after a short wait, then 我懂 opens */
   function showKey(){
-    nb.hidden=true;pb.style.visibility='hidden';
+    keyShown=true;
     kb.innerHTML=`<div class="keypt"><b class="lab">重點：跟著念一遍</b><div class="key-txt">${X.key}</div>
       <div class="read-row"><button class="btn ghost" type="button" id="kl">${ICON.say}再聽一次</button><button class="btn read-btn" type="button" id="kr" disabled></button></div></div>`;
     const kt=$('.key-txt',kb),kr=$('#kr',kb);
@@ -2188,21 +2206,17 @@ function stLook(box,u,l,L,goStage){
   function draw(){
     const v=visFor(i);vis.innerHTML=v;vis.hidden=!v;
     $('#lc',box).textContent=`第 ${i+1} 步 / 共 ${N} 步`;
-    cl.innerHTML=X.steps.map((s,j)=>{const cls=j<i?'done':j===i?'cur':'todo';return`<li class="clue ${cls}"><button class="clue-k" type="button" data-j="${j}" ${j>i?'disabled':''}><span class="n">${CIRC[j]}</span><span>${s.k}</span></button>${j<=i?`<div class="clue-t">${j<i?s.t.replace(/\{\{([\s\S]+?)\}\}/g,'<span class="peek-v">$1</span>'):peekify(s.t)}</div>`:''}</li>`;}).join('');
-    $$('.clue-k',cl).forEach(b=>b.onclick=()=>{const j=+b.dataset.j;if(j<i){i=j;draw();}});
-    $$('.peek-b',cl).forEach(b=>b.onclick=()=>{b.hidden=true;b.nextElementSibling.hidden=false;setBtn();});
+    cl.innerHTML=X.steps.map((s,j)=>{const cls=j<i?'done':j===i?'cur':'todo';return`<li class="clue ${cls}" data-j="${j}"><button class="clue-k" type="button" data-j="${j}" ${j>i+1?'disabled':''}><span class="n">${CIRC[j]}</span><span>${s.k}</span>${j===i+1?'<span class="tap-me" aria-hidden="true">點我</span>':''}</button>${j<=i?`<div class="clue-t">${j<i?s.t.replace(/\{\{([\s\S]+?)\}\}/g,'<span class="peek-v">$1</span>'):peekify(s.t)}</div>`:''}</li>`;}).join('');
+    $$('.clue-k',cl).forEach(b=>b.onclick=()=>{const j=+b.dataset.j;
+      if(j<i){i=j;keyShown=false;kb.innerHTML='';nb.hidden=true;draw();return;}
+      if(j===i+1){if(unrevealed()){$$('.clue.cur .peek-b',cl).forEach(p=>{p.classList.remove('nudge');void p.offsetWidth;p.classList.add('nudge');});hint();return;}i=j;draw();}});
+    $$('.peek-b',cl).forEach(b=>b.onclick=()=>{b.hidden=true;b.nextElementSibling.hidden=false;refresh();});
     const curEl=$('.clue.cur',cl);
     if(curEl&&!curEl.querySelector('.say')){const sb=sayBtn($('.clue-t',curEl));sb.style.cssText='width:2.3rem;height:2.3rem;margin-left:auto';$('.clue-k',curEl).append(sb);}
-    pb.style.visibility=i===0?'hidden':'visible';
-    kb.innerHTML='';nb.hidden=false;setBtn();autoSay($('.clue.cur .clue-t',cl));
+    refresh();autoSay($('.clue.cur .clue-t',cl));
+    const nx=$('.clue.todo',cl);if(nx&&i>0)curEl.scrollIntoView({block:'nearest',behavior:store.set.calm?'auto':'smooth'});
   }
-  pb.onclick=()=>{if(i>0){i--;draw();}};
-  nb.onclick=()=>{
-    if(unrevealed()){$$('.clue.cur .peek',cl).forEach(p=>{$('.peek-b',p).hidden=true;$('.peek-v',p).hidden=false;});setBtn();return;}
-    if(i<N-1){i++;draw();return;}
-    if(!kb.innerHTML){showKey();return;}
-    if(stagesOf(u,l).look)goStage('know');
-  };
+  nb.onclick=()=>{if(stagesOf(u,l).look)goStage('know');};
   draw();
 }
 function stKnow(box,u,l,L,goStage){
